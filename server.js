@@ -19,7 +19,7 @@ const app = express();
 
 // ✅ CORS configuration
 const allowedOrigins = [
-  "https://cmi-frontend.vercel.app",
+  "https://www.coremodellingindia.in",
   "http://localhost:3000", // optional: allow local dev too
 ];
 

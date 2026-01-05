@@ -56,7 +56,7 @@ app.use("/api/users", userRoutes);
 
 // Pre-create admin if not exists
 const createAdmin = async () => {
-  const adminExists = await User.findOne({ email: "admin@gmail.com" });
+  const adminExists = await User.findOne({ email: "coremodel@gmail.com" });
   if (!adminExists) {
     await User.create({
       name: "Admin",

@@ -64,7 +64,7 @@ const createAdmin = async () => {
       email: "admin@gmail.com",
       password: "admin123",
     });
-    console.log("Admin user created: admin@gmail.com / admin123");
+    // console.log("Admin user created: admin@gmail.com / admin123");
   }
 };
 createAdmin();

@@ -61,8 +61,8 @@ const createAdmin = async () => {
     await User.create({
       name: "Admin",
       role: "admin",
-      email: "admin@gmail.com",
-      password: "admin123",
+      email: "coremodel@gmail.com",
+      password: "Coremodel@0205",
     });
     // console.log("Admin user created: admin@gmail.com / admin123");
   }

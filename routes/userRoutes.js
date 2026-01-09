@@ -49,18 +49,37 @@ router.post("/upload", protect, upload.single("file"), async (req, res) => {
   }
 });
 
-// ✅ Get logged-in user's gallery
+// ✅ Get logged-in user's gallery (approved artists only)
 router.get("/gallery", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("photos videos name");
+    // 🔒 BLOCK unapproved artists
+    if (req.user.role === "artist" && req.user.status !== "approved") {
+      return res.status(403).json({
+        message: "Gallery access is locked until profile approval",
+      });
+    }
+
+    const user = await User.findById(req.user.id).select(
+      "photos videos name"
+    );
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ photos: user.photos, videos: user.videos, name: user.name });
+
+    res.json({
+      photos: user.photos,
+      videos: user.videos,
+      name: user.name,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
+
 
 // ✅ Delete photo/video
 router.delete("/delete", protect, async (req, res) => {

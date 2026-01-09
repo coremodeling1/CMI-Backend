@@ -337,6 +337,24 @@ export const updatePremiumStatus = async (req, res) => {
 };
 
 
+// ✅ Get logged-in user profile
+export const getMyProfile = async (req, res) => {
+  try {
+    // req.user is already set by protect middleware
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user); // ✅ includes status
+  } catch (error) {
+    console.error("getMyProfile error:", error.message);
+    res.status(500).json({ message: "Failed to fetch profile" });
+  }
+};
+
+
 
 
 

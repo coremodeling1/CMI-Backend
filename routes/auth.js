@@ -1,6 +1,6 @@
 // routes/authRoutes.js
 import express from "express";
-import { signup, login, updateUserProfile, changePassword, getAllRecruiters, updatePremiumStatus } from "../controllers/authController.js";
+import { signup, login, updateUserProfile, changePassword, getAllRecruiters, updatePremiumStatus, getMyProfile } from "../controllers/authController.js";
 import upload from "../middleware/upload.js";
 import { protect } from "../middleware/authMiddleware.js"; // ✅ import protect
 
@@ -37,6 +37,8 @@ router.get("/recruiters", getAllRecruiters);
 
 router.put("/recruiters/:recruiterId/premium", protect, updatePremiumStatus);
 
+// ✅ Get logged-in user profile
+router.get("/profile", protect, getMyProfile);
 
 
 export default router;

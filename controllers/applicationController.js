@@ -9,7 +9,8 @@ export const applyForJob = async (req, res) => {
     console.log("Incoming body:", req.body);
     console.log("Incoming file:", req.file);
 
-    const { userId, jobId, fullName, email, contact, qualifications, dob, city, state } = req.body;
+    const { jobId, fullName, email, contact, qualifications, dob, city, state } = req.body;
+    const userId = req.user._id;
 
     let cvUrl = null;
     if (req.file) {

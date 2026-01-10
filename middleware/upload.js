@@ -7,7 +7,9 @@ const storage = multer.memoryStorage();
 const allowed = new Set([
   "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/avif",
   "video/mp4", "video/quicktime", "video/mpeg", "video/webm", "video/ogg", "video/x-matroska",
-  "application/pdf" // ✅ allow PDF uploads for CV
+  // PDFs (different browsers send different mimetypes)
+  "application/pdf",
+  "application/octet-stream"
 ]);
 
 const fileFilter = (req, file, cb) => {

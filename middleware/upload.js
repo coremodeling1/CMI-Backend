@@ -13,9 +13,36 @@ const allowed = new Set([
 ]);
 
 const fileFilter = (req, file, cb) => {
-  if (allowed.has(file.mimetype)) cb(null, true);
-  else cb(new Error("Unsupported file type"), false);
+  const type = (file.mimetype || "").toLowerCase();
+
+  // Allow all images
+  if (type.startsWith("image/")) {
+    return cb(null, true);
+  }
+
+  // Allow common video types
+  const videoTypes = [
+    "video/mp4",
+    "video/quicktime",
+    "video/mpeg",
+    "video/webm",
+    "video/ogg",
+    "video/x-matroska",
+  ];
+
+  if (videoTypes.includes(type)) {
+    return cb(null, true);
+  }
+
+  // Allow PDFs and unknown binaries
+  if (type === "application/pdf" || type === "application/octet-stream") {
+    return cb(null, true);
+  }
+
+  console.log("Rejected mimetype:", file.mimetype);
+  cb(new Error(`Unsupported file type: ${file.mimetype}`), false);
 };
+
 
 const upload = multer({ storage,  fileFilter });
 

@@ -3,16 +3,34 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
 
-
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 export const signup = async (req, res) => {
   try {
     const {
-      name, role, identity, email, password, description,
-      contact, gender, dob, city, state, country, language,
-      instagram ,   instagramFollowers   // ✅ added
+      name,
+      role,
+      identity,
+      email,
+      password,
+      description,
+      contact,
+      gender,
+      dob,
+      city,
+      state,
+      country,
+      language,
+      instagram,
+      instagramFollowers,
+
+      // 🔽 Common artist fields
+      willingToTravel,
+      experience,
+      internationalProjects,
+      availabilityForCasting,
+      aboutYourself,
     } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -24,22 +42,43 @@ export const signup = async (req, res) => {
     let videos = [];
 
     if (req.files?.profilePic?.[0]) {
-      const uploadRes = await uploadBufferToCloudinary(req.files.profilePic[0].buffer, {
-        folder: "profile_pics",
-        resourceType: "image",
-      });
+      const uploadRes = await uploadBufferToCloudinary(
+        req.files.profilePic[0].buffer,
+        {
+          folder: "profile_pics",
+          resourceType: "image",
+        }
+      );
       profilePicUrl = uploadRes.secure_url;
     }
 
     if (req.files?.files?.length > 0 && identity) {
-      const photoIdentities = ["model","actor","influencer","writer","stylist","photographer","advertising professional"];
-      const videoIdentities = ["singer","musician","dancer","anchor","voice-over artist","filmmaker","standup-comedian"];
+      const photoIdentities = [
+        "model",
+        "actor",
+        "influencer",
+        "writer",
+        "stylist",
+        "photographer",
+        "advertising professional",
+      ];
+      const videoIdentities = [
+        "singer",
+        "musician",
+        "dancer",
+        "anchor",
+        "voice-over artist",
+        "filmmaker",
+        "standup-comedian",
+      ];
 
       const uploads = await Promise.all(
         req.files.files.map((file) =>
           uploadBufferToCloudinary(file.buffer, {
             folder: `artists/${identity}`,
-            resourceType: photoIdentities.includes(identity) ? "image" : "video",
+            resourceType: photoIdentities.includes(identity)
+              ? "image"
+              : "video",
           })
         )
       );
@@ -58,6 +97,7 @@ export const signup = async (req, res) => {
       email,
       password,
       description,
+
       contact: role === "artist" ? contact : undefined,
       gender: role === "artist" ? gender : undefined,
       dob: role === "artist" ? dob : undefined,
@@ -65,13 +105,34 @@ export const signup = async (req, res) => {
       state: role === "artist" ? state : undefined,
       country: role === "artist" ? country : undefined,
       language: role === "artist" ? language : undefined,
-      instagram: role === "artist" ? instagram : undefined, // ✅ save IG link
-       instagramFollowers: role === "artist" ? instagramFollowers : undefined, // ✅ NEW
+
+      instagram: role === "artist" ? instagram : undefined,
+      instagramFollowers: role === "artist" ? instagramFollowers : undefined,
+
+      // 🔽 Save common artist fields
+      willingToTravel:
+        role === "artist"
+          ? typeof willingToTravel === "boolean"
+            ? willingToTravel
+            : willingToTravel === "true"
+          : undefined,
+
+      internationalProjects:
+        role === "artist"
+          ? typeof internationalProjects === "boolean"
+            ? internationalProjects
+            : internationalProjects === "true"
+          : undefined,
+
+      experience: role === "artist" ? experience : undefined,
+      availabilityForCasting:
+        role === "artist" ? availabilityForCasting : undefined,
+      aboutYourself: role === "artist" ? aboutYourself : undefined,
+
       profilePic: profilePicUrl,
       photos,
       videos,
-       premiumStatus: "none", // optional but explicit is better
-    
+      premiumStatus: "none",
     });
 
     res.status(201).json({
@@ -87,21 +148,27 @@ export const signup = async (req, res) => {
       state: user.state,
       country: user.country,
       language: user.language,
-      instagram: user.instagram,  // ✅ send IG link back in response
-        instagramFollowers: user.instagramFollowers,   // ✅ NEW
+      instagram: user.instagram,
+      instagramFollowers: user.instagramFollowers,
+      willingToTravel: user.willingToTravel,
+      experience: user.experience,
+      internationalProjects: user.internationalProjects,
+      availabilityForCasting: user.availabilityForCasting,
+      aboutYourself: user.aboutYourself,
       profilePic: user.profilePic,
       photos: user.photos,
       videos: user.videos,
       description: user.description,
-        premiumStatus: user.premiumStatus,   // ✅ add this
-      token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" }),
+      premiumStatus: user.premiumStatus,
+      token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      }),
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 // Login
@@ -129,22 +196,19 @@ export const login = async (req, res) => {
       state: user.state,
       country: user.country,
       language: user.language,
-      profilePic: user.profilePic,  // ✅ ADD THIS LINE
+      profilePic: user.profilePic, // ✅ ADD THIS LINE
       photos: user.photos,
       videos: user.videos,
       description: user.description,
-           instagram: user.instagram,  // ✅ send IG link back in response
-        instagramFollowers: user.instagramFollowers,   // ✅ NEW
-        premiumStatus: user.premiumStatus,   // ✅ add this
+      instagram: user.instagram, // ✅ send IG link back in response
+      instagramFollowers: user.instagramFollowers, // ✅ NEW
+      premiumStatus: user.premiumStatus, // ✅ add this
       token: generateToken(user._id),
-
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 
 // ✅ Update User Profile
 export const updateUserProfile = async (req, res) => {
@@ -204,15 +268,13 @@ export const updateUserProfile = async (req, res) => {
       if (instagramFollowers !== undefined)
         user.instagramFollowers = instagramFollowers;
 
-      if (willingToTravel !== undefined)
-        user.willingToTravel = willingToTravel;
+      if (willingToTravel !== undefined) user.willingToTravel = willingToTravel;
       if (experience !== undefined) user.experience = experience;
       if (internationalProjects !== undefined)
         user.internationalProjects = internationalProjects;
       if (availabilityForCasting !== undefined)
         user.availabilityForCasting = availabilityForCasting;
-      if (aboutYourself !== undefined)
-        user.aboutYourself = aboutYourself;
+      if (aboutYourself !== undefined) user.aboutYourself = aboutYourself;
 
       // 🔽 Identity-specific data
       if (identity && identityDetails) {
@@ -318,11 +380,6 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-
-
-
-
-
 // ✅ Change Password
 export const changePassword = async (req, res) => {
   try {
@@ -330,7 +387,9 @@ export const changePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) {
-      return res.status(400).json({ message: "Both old and new password are required" });
+      return res
+        .status(400)
+        .json({ message: "Both old and new password are required" });
     }
 
     const user = await User.findById(userId);
@@ -346,16 +405,15 @@ export const changePassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    res.json({ message: "Password updated successfully. Please login again with new password." });
+    res.json({
+      message:
+        "Password updated successfully. Please login again with new password.",
+    });
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
-
 
 // ✅ Get all recruiters (admin-only ideally)
 export const getAllRecruiters = async (req, res) => {
@@ -369,8 +427,6 @@ export const getAllRecruiters = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 // ✅ Update recruiter premium status
 export const updatePremiumStatus = async (req, res) => {
@@ -397,7 +453,6 @@ export const updatePremiumStatus = async (req, res) => {
   }
 };
 
-
 // ✅ Get logged-in user profile
 export const getMyProfile = async (req, res) => {
   try {
@@ -414,10 +469,3 @@ export const getMyProfile = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch profile" });
   }
 };
-
-
-
-
-
-
-

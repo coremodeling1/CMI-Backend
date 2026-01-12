@@ -58,7 +58,7 @@ export const signup = async (req, res) => {
         "writer",
         "stylist",
         "photographer",
-        "advertising professional",
+        "advertisingProfessional",
       ];
       const videoIdentities = [
         "singer",
@@ -325,7 +325,7 @@ export const updateUserProfile = async (req, res) => {
             "writer",
             "stylist",
             "photographer",
-            "advertising professional",
+            "advertisingProfessional",
           ].includes(user.identity)
         ) {
           user.photos = [...user.photos, ...uploadedUrls];

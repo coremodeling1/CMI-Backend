@@ -156,33 +156,84 @@ export const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update basic fields
     const {
-      name, email, description, contact,
-      gender, dob, city, state, country, language,
-      role, identity,
-      instagram, instagramFollowers, // ✅ added
+      name,
+      email,
+      description,
+      contact,
+      gender,
+      dob,
+      city,
+      state,
+      country,
+      language,
+      role,
+      identity,
+      instagram,
+      instagramFollowers,
+
+      // 🔽 Common artist fields
+      willingToTravel,
+      experience,
+      internationalProjects,
+      availabilityForCasting,
+      aboutYourself,
+
+      // 🔽 Identity-specific block (JSON string from frontend)
+      identityDetails,
     } = req.body;
 
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (role) user.role = role;
-    if (identity) user.identity = identity;
+    // Basic fields
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (role !== undefined) user.role = role;
+    if (identity !== undefined) user.identity = identity;
 
-    if (description) user.description = description;
-    if (contact) user.contact = contact;
-    if (gender) user.gender = gender;
-    if (dob) user.dob = dob;
-    if (city) user.city = city;
-    if (state) user.state = state;
-    if (country) user.country = country;
-    if (language) user.language = language;
+    if (description !== undefined) user.description = description;
+    if (contact !== undefined) user.contact = contact;
+    if (gender !== undefined) user.gender = gender;
+    if (dob !== undefined) user.dob = dob;
+    if (city !== undefined) user.city = city;
+    if (state !== undefined) user.state = state;
+    if (country !== undefined) user.country = country;
+    if (language !== undefined) user.language = language;
 
-    // ✅ Only artists can update Instagram details
+    // Artist-only fields
     if (user.role === "artist") {
       if (instagram !== undefined) user.instagram = instagram;
       if (instagramFollowers !== undefined)
         user.instagramFollowers = instagramFollowers;
+
+      if (willingToTravel !== undefined)
+        user.willingToTravel = willingToTravel;
+      if (experience !== undefined) user.experience = experience;
+      if (internationalProjects !== undefined)
+        user.internationalProjects = internationalProjects;
+      if (availabilityForCasting !== undefined)
+        user.availabilityForCasting = availabilityForCasting;
+      if (aboutYourself !== undefined)
+        user.aboutYourself = aboutYourself;
+
+      // 🔽 Identity-specific data
+      if (identity && identityDetails) {
+        if (!user.artistDetails) user.artistDetails = {};
+
+        const allowed = [
+          "model",
+          "advertisingProfessional",
+          "actor",
+          "photographer",
+          "filmmaker",
+          "dancer",
+          "singer",
+          "musician",
+          "stylist",
+        ];
+
+        if (allowed.includes(identity)) {
+          user.artistDetails[identity] = JSON.parse(identityDetails);
+        }
+      }
     }
 
     // ✅ Profile Pic Upload
@@ -210,7 +261,6 @@ export const updateUserProfile = async (req, res) => {
 
       const uploadedUrls = uploads.map((u) => u.secure_url);
 
-      // merge new uploads with old ones
       if (user.identity) {
         if (
           [
@@ -232,7 +282,6 @@ export const updateUserProfile = async (req, res) => {
 
     const updatedUser = await user.save();
 
-    // ✅ Include new IG fields in response
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
@@ -250,14 +299,26 @@ export const updateUserProfile = async (req, res) => {
       state: updatedUser.state,
       country: updatedUser.country,
       language: updatedUser.language,
-      instagram: updatedUser.instagram,                 // ✅
-      instagramFollowers: updatedUser.instagramFollowers, // ✅
+      instagram: updatedUser.instagram,
+      instagramFollowers: updatedUser.instagramFollowers,
+
+      // 🔽 New common artist fields
+      willingToTravel: updatedUser.willingToTravel,
+      experience: updatedUser.experience,
+      internationalProjects: updatedUser.internationalProjects,
+      availabilityForCasting: updatedUser.availabilityForCasting,
+      aboutYourself: updatedUser.aboutYourself,
+
+      // 🔽 All identity-specific data
+      artistDetails: updatedUser.artistDetails,
     });
   } catch (error) {
     console.error("Update profile error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
+
 
 
 

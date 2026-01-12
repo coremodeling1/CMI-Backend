@@ -23,14 +23,12 @@ export const signup = async (req, res) => {
       country,
       language,
       instagram,
-      instagramFollowers,
-
-      // 🔽 Common artist fields
+      instagramFollowers, // 🔽 ADD THESE
       willingToTravel,
       experience,
       internationalProjects,
       availabilityForCasting,
-      aboutYourself,
+      aboutYourself, // ✅ added
     } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -97,7 +95,6 @@ export const signup = async (req, res) => {
       email,
       password,
       description,
-
       contact: role === "artist" ? contact : undefined,
       gender: role === "artist" ? gender : undefined,
       dob: role === "artist" ? dob : undefined,
@@ -105,10 +102,8 @@ export const signup = async (req, res) => {
       state: role === "artist" ? state : undefined,
       country: role === "artist" ? country : undefined,
       language: role === "artist" ? language : undefined,
-
-      instagram: role === "artist" ? instagram : undefined,
-      instagramFollowers: role === "artist" ? instagramFollowers : undefined,
-
+      instagram: role === "artist" ? instagram : undefined, // ✅ save IG link
+      instagramFollowers: role === "artist" ? instagramFollowers : undefined, // ✅ NEW
       // 🔽 Save common artist fields
       willingToTravel:
         role === "artist"
@@ -128,11 +123,10 @@ export const signup = async (req, res) => {
       availabilityForCasting:
         role === "artist" ? availabilityForCasting : undefined,
       aboutYourself: role === "artist" ? aboutYourself : undefined,
-
       profilePic: profilePicUrl,
       photos,
       videos,
-      premiumStatus: "none",
+      premiumStatus: "none", // optional but explicit is better
     });
 
     res.status(201).json({
@@ -148,8 +142,8 @@ export const signup = async (req, res) => {
       state: user.state,
       country: user.country,
       language: user.language,
-      instagram: user.instagram,
-      instagramFollowers: user.instagramFollowers,
+      instagram: user.instagram, // ✅ send IG link back in response
+      instagramFollowers: user.instagramFollowers, // ✅ NEW
       willingToTravel: user.willingToTravel,
       experience: user.experience,
       internationalProjects: user.internationalProjects,
@@ -159,7 +153,7 @@ export const signup = async (req, res) => {
       photos: user.photos,
       videos: user.videos,
       description: user.description,
-      premiumStatus: user.premiumStatus,
+      premiumStatus: user.premiumStatus, // ✅ add this
       token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       }),
@@ -169,7 +163,6 @@ export const signup = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // Login
 export const login = async (req, res) => {

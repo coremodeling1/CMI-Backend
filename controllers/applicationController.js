@@ -24,21 +24,20 @@ export const applyForJob = async (req, res) => {
     let cvUrl = null;
     if (req.file) {
       const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              resource_type: "raw",
-              folder: "cvs",
-              public_id: `cv_${Date.now()}.pdf`, // 👈 force .pdf
-              use_filename: true,
-              unique_filename: false,
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          )
-          .end(req.file.buffer);
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw",
+            folder: "cvs",
+            use_filename: true,
+            unique_filename: true,
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+
+        stream.end(req.file.buffer);
       });
 
       cvUrl = uploadResult.secure_url;

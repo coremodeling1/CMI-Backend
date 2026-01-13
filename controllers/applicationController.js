@@ -9,23 +9,37 @@ export const applyForJob = async (req, res) => {
     console.log("Incoming body:", req.body);
     console.log("Incoming file:", req.file);
 
-    const { jobId, fullName, email, contact, qualifications, dob, city, state } = req.body;
+    const {
+      jobId,
+      fullName,
+      email,
+      contact,
+      qualifications,
+      dob,
+      city,
+      state,
+    } = req.body;
     const userId = req.user._id;
 
     let cvUrl = null;
     if (req.file) {
-   const uploadResult = await new Promise((resolve, reject) => {
-  cloudinary.uploader
-    .upload_stream(
-      { resource_type: "raw", folder: "cvs" },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      }
-    )
-    .end(req.file.buffer);
-});
-
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              resource_type: "raw",
+              folder: "cvs",
+              public_id: `cv_${Date.now()}.pdf`, // 👈 force .pdf
+              use_filename: true,
+              unique_filename: false,
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          )
+          .end(req.file.buffer);
+      });
 
       cvUrl = uploadResult.secure_url;
       console.log("Uploaded CV to Cloudinary:", cvUrl);
@@ -49,10 +63,14 @@ export const applyForJob = async (req, res) => {
     await User.findByIdAndUpdate(userId, { $push: { appliedJobs: jobId } });
     await Job.findByIdAndUpdate(jobId, { $push: { applicants: userId } });
 
-    return res.status(201).json({ message: "Application submitted successfully", application });
+    return res
+      .status(201)
+      .json({ message: "Application submitted successfully", application });
   } catch (error) {
     console.error("Error in applyForJob:", error);
-    return res.status(500).json({ error: "Server error while applying for job" });
+    return res
+      .status(500)
+      .json({ error: "Server error while applying for job" });
   }
 };
 
@@ -60,7 +78,9 @@ export const applyForJob = async (req, res) => {
 export const getUserApplications = async (req, res) => {
   try {
     const { userId } = req.params;
-    const applications = await Application.find({ user: userId }).populate("job");
+    const applications = await Application.find({ user: userId }).populate(
+      "job"
+    );
     res.json(applications);
   } catch (error) {
     res.status(500).json({ error: "Error fetching applications" });
@@ -71,9 +91,10 @@ export const getUserApplications = async (req, res) => {
 export const getJobApplicants = async (req, res) => {
   try {
     const { jobId } = req.params;
-   const applications = await Application.find({ job: jobId })
-  .populate("user", "name email status");
-;
+    const applications = await Application.find({ job: jobId }).populate(
+      "user",
+      "name email status"
+    );
     res.json(applications);
   } catch (error) {
     res.status(500).json({ error: "Error fetching applicants" });

@@ -23,13 +23,21 @@ export const applyForJob = async (req, res) => {
 
     let cvUrl = null;
     if (req.file) {
+      // ✅ Extract file extension from original filename
+      const fileExt = req.file.originalname.split('.').pop(); // "pdf"
+      const timestamp = Date.now();
+      
+      // ✅ Create custom filename: cv_userId_timestamp.pdf
+      const customFileName = `cv_${userId}_${timestamp}.${fileExt}`;
+
       const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           {
             resource_type: "raw",
             folder: "cvs",
-            use_filename: true,
-            unique_filename: true,
+            public_id: customFileName, // ✅ Custom naming with extension
+            use_filename: false, // ✅ Don't use original filename
+            unique_filename: false, // ✅ Don't add random suffix (already unique with timestamp)
           },
           (error, result) => {
             if (error) return reject(error);
@@ -72,6 +80,7 @@ export const applyForJob = async (req, res) => {
       .json({ error: "Server error while applying for job" });
   }
 };
+
 
 // Get applications for a user
 export const getUserApplications = async (req, res) => {
